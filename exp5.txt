@@ -1,0 +1,107 @@
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+
+using namespace std;
+
+
+
+void combineHelper(const vector<vector<string>>& lists, int depth, string currentString, vector<string>& combinedStrings) 
+{
+    if (depth == lists.size()) {
+        combinedStrings.push_back(currentString);
+        return;
+    }
+
+    for (const string& s : lists[depth]) {
+        combineHelper(lists, depth + 1, currentString + s, combinedStrings);
+    }
+}
+
+vector<string> combine(const vector<vector<string>>& lists) 
+{
+    vector<string> combinedStrings;
+    combineHelper(lists, 0, "", combinedStrings);
+    return combinedStrings;
+}
+
+vector<string> generateAllStrings(const unordered_map<char, vector<vector<char>>>& grammar, char symbol, int maxDepth) 
+{
+    vector<string> result;
+
+    if (grammar.find(symbol) == grammar.end()) {
+        result.push_back(string(1, symbol));
+        return result;
+    }
+
+    if (maxDepth <= 0) {
+        return result;
+    }
+
+    const vector<vector<char>>& productions = grammar.at(symbol);
+    for (const vector<char>& production : productions) {
+        vector<vector<string>> generatedStrings;
+        for (char s : production) {
+            generatedStrings.push_back(generateAllStrings(grammar, s, maxDepth - 1));
+        }
+        vector<string> combinedStrings = combine(generatedStrings);
+        result.insert(result.end(), combinedStrings.begin(), combinedStrings.end());
+    }
+
+    return result;
+}
+
+int main() 
+{
+    // Create a scanner to read user input
+    cout << "Enter the number of production rules: ";
+    int numRules;
+    cin >> numRules;
+
+    unordered_map<char, vector<vector<char>>> grammar;
+
+    cin.ignore();
+    for (int i = 0; i < numRules; i++) {
+        cout << "Enter the left-hand side of rule " << (i + 1) << ": ";
+        char lhs;
+        cin >> lhs;
+
+        cout << "Enter the right-hand side of rule " << (i + 1) << ": ";
+        string rhsString;
+        cin >> rhsString;
+
+        vector<char> rhs(rhsString.begin(), rhsString.end());
+        grammar[lhs].push_back(rhs);
+    }
+
+    cout << "Enter the start symbol: ";
+    char startSymbol;
+    cin >> startSymbol;
+
+    int maxDepth = 10;
+    vector<string> generatedStrings = generateAllStrings(grammar, startSymbol, maxDepth);
+
+    vector<string> list;
+    for (const string& str : generatedStrings) {
+        list.push_back(str);
+    }
+
+    cout << "Enter input string: ";
+    string input;
+    cin >> input;
+
+    bool flag = false;
+    for (const string& str : list) {
+        if (str == input) {
+            cout << "The given input " << str << " is parsed for the given grammar" << endl;
+            flag = true;
+            break;
+        }
+    }
+
+    if (!flag) {
+        cout << "The given input " << input << " cannot be parsed for the given grammar" << endl;
+    }
+
+    return 0;
+}

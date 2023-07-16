@@ -1,0 +1,105 @@
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+// Maximum number of states and symbols
+#define MAX_STATES 10
+#define MAX_SYMBOLS 10
+// Function to build the DFA Transition Table
+void buildTransitionTable(int states, int symbols, int transitionTable[MAX_STATES][MAX_SYMBOLS])
+{
+    printf("Enter the transition states for each transition:\n");
+    for (int i = 0; i < states; i++)
+    {
+        for (int j = 0; j < symbols; j++)
+        {
+            printf("Transition from state %d with input symbol %c (or 'null' if no transition): ", i, 'a' + j);
+            char input[100];
+            scanf("%s", input);
+            if (strcmp(input, "null") == 0)
+            {
+                transitionTable[i][j] = -1;
+            }
+            else
+            {
+                sscanf(input, "%d", &transitionTable[i][j]);
+            }
+        }
+    }
+}
+// Function to check if the input string is accepted by DFA
+bool isAccepted(char *input, int states, int symbols, int transitionTable[][MAX_SYMBOLS], bool acceptingStates[])
+{
+    int currentState = 0; // Start with initial state
+    int len = strlen(input);
+    printf("State Path: (%d, -) ", currentState); // Print the initial state
+    for (int i = 0; i < len; i++)
+    {
+        int symbol = input[i] - 'a'; // Assuming input symbols are 'a' and 'b'
+        if (symbol < 0 || symbol >= symbols)
+        {
+            printf("\nInvalid symbol found in the input!\n");
+            return false;
+        }
+        int nextState = transitionTable[currentState][symbol];
+        printf("-> (%d, %c) ", nextState, input[i]); // Print the state and input transition
+        if (nextState < -1 || nextState >= states)
+        {
+            printf("\nInvalid state transition!\n");
+            return false;
+        }
+        currentState = nextState;
+    }
+    printf("\n");
+    // Print the transition table
+
+    printf("\nTransition Table:\n");
+    printf("State\t|");
+    for (int j = 0; j < symbols; j++)
+    {
+        printf(" %c |", 'a' + j);
+    }
+    printf("\n");
+    for (int i = 0; i < states; i++)
+    {
+        printf(" %d\t\t|", i);
+        for (int j = 0; j < symbols; j++)
+        {
+            if (transitionTable[i][j] == -1)
+            {
+                printf(" null |");
+            }
+            else
+            {
+                printf(" %d |", transitionTable[i][j]);
+            }
+        }
+        printf("\n");
+    }
+    return acceptingStates[currentState];
+}
+int main()
+{
+    int states, symbols;
+    printf("Enter the number of states: ");
+    scanf("%d", &states);
+    printf("Enter the number of input symbols: ");
+    scanf("%d", &symbols);
+    // Validate the number of states and symbols
+    if (states <= 0 || states > MAX_STATES || symbols <= 0 || symbols > MAX_SYMBOLS)
+    {
+        printf("Invalid number of states or symbols!\n");
+        return 1;
+    }
+    int transitionTable[MAX_STATES][MAX_SYMBOLS];
+    bool acceptingStates[MAX_STATES];
+    buildTransitionTable(states, symbols, transitionTable);
+    printf("\nEnter the input string (containing only 'a' to '%c'): ", 'a' + symbols - 1);
+    char input[100];
+    scanf("%s", input);
+    bool accepted = isAccepted(input, states, symbols, transitionTable, acceptingStates);
+    if (accepted)
+        printf("String is accepted by the DFA!\n");
+    else
+        printf("String is not accepted by the DFA!\n");
+    return 0;
+}

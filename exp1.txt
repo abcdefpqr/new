@@ -1,0 +1,178 @@
+#include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+int main()
+{
+    FILE *input;
+    FILE *output;
+    int l = 1;
+    int t = 0;
+    int j = 0;
+    int i, flag = 0;
+    char ch, str[20], y;
+    input = fopen("input.txt", "r");
+    output = fopen("output.txt", "w");
+    char header[12][30] = {"util", "xml", "sql", "nio", "math", "awt", "net", "io", "lang", "security", "java", "Scanner"};
+    char keyword[44][30] = {"int", "class", "void", "import", "char", "abstract", "boolean", "public", "static", "System", "private", "protected", "main", "String", "break", "byte", "case", "catch", "class", "continue", "default", "do", "else", "enum", "exports", "extends", "final", "float", "implements", "interface", "instanceof", "long", "new", "private", "public", "protected", "return", "short", "super", "this", "throw", "try", "var", "void"};
+    char conditionals[4][30] = {"if", "else", "switch", "case"};
+    char looping[3][30] = {"do", "while", "for"};
+    fprintf(output, "Line no. \t Token no. \t \tToken \t\t\t Lexeme\n\n");
+    while (!feof(input))
+    {
+        i = 0;
+        flag = 0;
+        ch = fgetc(input);
+        if (ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '%')
+        {
+            fprintf(output, "%7d\t\t %7d\t\t Operator\t\t %7c\n", l, t, ch);
+            t++;
+        }
+        if (ch == '?' || ch == ':')
+        {
+            fprintf(output, "%7d\t\t %7d\t\t Ternary Operator %7c\n", l, t, ch);
+            t++;
+        }
+        else if (ch == '.')
+        {
+            fprintf(output, "%7d\t\t %7d\t\t Access Operator %7c\n", l, t, ch);
+            t++;
+        }
+        else if (ch == '#')
+        {
+            fprintf(output, "%7d\t\t %7d\t\t Preprocessor\t %7c\n", l, t, ch);
+            t++;
+        }
+
+        else if (ch == ';')
+        {
+            fprintf(output, "%7d\t\t %7d\t\t End of Line\t %7c\n", l, t, ch);
+            t++;
+        }
+        else if (ch == '{')
+        {
+            fprintf(output, "%7d\t\t %7d\t\t Open braces\t %7c\n", l, t, ch);
+            t++;
+        }
+        else if (ch == '}')
+        {
+            fprintf(output, "%7d\t\t %7d\t\t Closing braces\t %7c\n", l, t, ch);
+            t++;
+        }
+        else if (ch == '(' || ch == '[')
+        {
+            fprintf(output, "%7d\t\t %7d\t\t Open brackets\t %7c\n", l, t, ch);
+            t++;
+        }
+        else if (ch == ')' || ch == ']')
+        {
+            fprintf(output, "%7d\t\t %7d\t\t Closing brackets %6c\n", l, t, ch);
+            t++;
+        }
+        else if (ch == '"' || ch == '\'')
+        {
+            fprintf(output, "%7d\t\t %7d\t\t Quotation marks %6c\n", l, t, ch);
+            t++;
+        }
+        else if (isdigit(ch))
+        {
+            fprintf(output, "%7d\t\t %7d\t\t Digit\t\t\t %7c\n", l, t, ch);
+            t++;
+        }
+
+        else if (isalpha(ch) || ch == '$' || ch == '_')
+        {
+            str[i] = ch;
+            i++;
+            ch = fgetc(input);
+            while (isalnum(ch) || ch == '_' && ch != ' ')
+            {
+                str[i] = ch;
+                i++;
+                ch = fgetc(input);
+            }
+            str[i] = '\0';
+
+            if (flag == 0)
+            {
+                for (j = 0; j <= 11; j++)
+                {
+                    if (strcmp(str, header[j]) == 0)
+                    {
+                        flag = 2;
+                        break;
+                    }
+                }
+            }
+            if (flag == 0)
+            {
+                for (j = 0; j <= 3; j++)
+                {
+                    if (strcmp(str, conditionals[j]) == 0)
+                    {
+                        flag = 3;
+                        break;
+                    }
+                }
+            }
+            if (flag == 0)
+            {
+                for (j = 0; j <= 2; j++)
+                {
+                    if (strcmp(str, looping[j]) == 0)
+                    {
+                        flag = 4;
+                        break;
+                    }
+                }
+            }
+            if (flag == 0)
+            {
+                for (j = 0; j <= 43; j++)
+                {
+                    if (strcmp(str, keyword[j]) == 0)
+                    {
+                        flag = 1;
+                        break;
+                    }
+                }
+            }
+            if (flag == 1)
+            {
+                fprintf(output, "%7d\t\t %7d\t\t Keyword\t\t %7s\n", l, t, str);
+                t++;
+            }
+            else if (flag == 2)
+            {
+                fprintf(output, "%7d\t\t %7d\t\t Header\t\t\t %7s\n", l, t, str);
+                t++;
+            }
+            else if (flag == 3)
+            {
+                fprintf(output, "%7d\t\t %7d\t\t Conditional Statements %2s\n", l, t, str);
+                t++;
+            }
+            else if (flag == 4)
+            {
+                fprintf(output, "%7d\t\t %7d\t\t Looping Statements %5s\n", l, t, str);
+                t++;
+            }
+            else if (flag == 0)
+            {
+                if (strcmp(str, "instanceof") == 0)
+                    fprintf(output, "%7d\t\t %7d\t\t Relational Operator\t\t %7s\n", l, t, str);
+                else
+                    fprintf(output, "%7d\t\t %7d\t\t Identifier\t\t %7s\n", l, t, str);
+                t++;
+            }
+            flag = 0;
+        }
+        else if (ch == '\n')
+        {
+            l++;
+        }
+    }
+    fclose(input);
+    fclose(output);
+    return 0;
+}
